@@ -124,6 +124,27 @@ public class TestExecutionData {
     public List<TestData> getTests() {
         return Collections.unmodifiableList(tests);
     }
+    
+    /**
+     * Gets only the passing or failing tests that this TestExecutionData keeps
+     * track of.
+     * @param passing Pass <code>true</code> to get only passing tests. Pass
+     * <code>false</code> to get only failing tests.
+     * @return All of the passing tests that this TestExecutionData keeps track
+     * of if <code>passing == true</code>. All of the failing tests that this
+     * TestExeuctionData keeps track of it <code>passing == false</code>.
+     */
+    public List<TestData> getTests(boolean passing) {
+        List<TestData> selectedTests = new ArrayList<>();
+        
+        for(TestData test : tests) {
+            if(test.getPassed() == passing) {
+                selectedTests.add(test);
+            }
+        }
+        
+        return Collections.unmodifiableList(selectedTests);
+    }
 
     @Override
     public String toString() {
