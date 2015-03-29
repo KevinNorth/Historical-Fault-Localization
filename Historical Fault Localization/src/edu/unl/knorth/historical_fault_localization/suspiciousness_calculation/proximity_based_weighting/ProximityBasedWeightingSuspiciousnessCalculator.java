@@ -272,9 +272,22 @@ public class ProximityBasedWeightingSuspiciousnessCalculator
             }
         }
         
-        double suspiciousness =  ((double) numRelevantFailingTests)
-                / (((double) numFailingTests)
-                    * (sum + ((double) numRelevantFailingTests)));
-        return new SuspiciousnessScore(statement, suspiciousness);
+        double numerator = (double) numRelevantFailingTests;
+        double denominator = StrictMath.sqrt(((double) numFailingTests)
+                * (sum + ((double) numRelevantFailingTests)));
+        double suspiciousness = numerator / denominator;
+        
+        SuspiciousnessScore result =
+                new SuspiciousnessScore(statement, suspiciousness);
+        System.out.println(result);
+        return result;
+    }
+
+    public ThresholdType getLowerThresdholdType() {
+        return lowerThresdholdType;
+    }
+
+    public ThresholdType getUpperThresdholdType() {
+        return upperThresdholdType;
     }
 }

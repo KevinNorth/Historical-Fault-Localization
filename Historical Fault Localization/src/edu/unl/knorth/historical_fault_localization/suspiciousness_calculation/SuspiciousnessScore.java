@@ -37,4 +37,10 @@ public final class SuspiciousnessScore
     public int compareTo(SuspiciousnessScore other) {
         return Double.compare(this.suspiciousness, other.suspiciousness);
     }
+
+    @Override
+    public String toString() {
+        return "SuspiciousnessScore{" + "statement=" + statement
+                + ", suspiciousness=" + suspiciousness + '}';
+    }
 }

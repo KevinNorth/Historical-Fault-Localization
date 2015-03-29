@@ -103,11 +103,11 @@ public class ProximityBasedWeightingSuspiciousnessCalculatorTest {
             }
         }
         
-        assertEquals(0.477D, statement1Suspiciousness, 0.0005D);
-        assertEquals(0.477D, statement2Suspiciousness, 0.0005D);
-        assertEquals(0.477D, statement3Suspiciousness, 0.0005D);
-        assertEquals(0.477D, statement4Suspiciousness, 0.0005D);
-        assertEquals(0.477D, statement5Suspiciousness, 0.0005D);
+        assertEquals(0.447D, statement1Suspiciousness, 0.0005D);
+        assertEquals(0.447D, statement2Suspiciousness, 0.0005D);
+        assertEquals(0.447D, statement3Suspiciousness, 0.0005D);
+        assertEquals(0.447D, statement4Suspiciousness, 0.0005D);
+        assertEquals(0.447D, statement5Suspiciousness, 0.0005D);
         assertEquals(0.577D, statement6Suspiciousness, 0.0005D);
         assertEquals(0.408D, statement7Suspiciousness, 0.0005D);
         assertEquals(0.378D, statement8Suspiciousness, 0.0005D);
@@ -311,6 +311,147 @@ public class ProximityBasedWeightingSuspiciousnessCalculatorTest {
         assertEquals(0.46154, results.get(2).getWeighitng(), 0.000005D);
         assertEquals(0.61538, results.get(3).getWeighitng(), 0.000005D);
 
+        results = calculator.calculateAdjustedWeightings(unadjustedWeightings,
+                        0.50D, 0.60D);
+        Collections.sort(results);
+        assertTrue(results.size() == 4);
+        assertEquals(0.07692, results.get(0).getWeighitng(), 0.000005D);
+        assertEquals(0.07692, results.get(1).getWeighitng(), 0.000005D);
+        assertEquals(0.38462, results.get(2).getWeighitng(), 0.000005D);
+        assertEquals(0.53846, results.get(3).getWeighitng(), 0.000005D);
+    }
+    
+    @Test
+    public void calculateScalingFactor() {
+        TestExecutionData data = DummyData.getDummyData();
+        ProximityBasedWeightingSuspiciousnessCalculator calculator =
+                new ProximityBasedWeightingSuspiciousnessCalculator(
+                        ThresholdType.IGNORED, ThresholdType.IGNORED);
+                
+        List<Weighting> adjustedWeighting =
+                getAdjustedWeightings(data, calculator);
+        
+        double scalingFactor =
+                calculator.calculateScalingFactor(adjustedWeighting);
+        
+        assertEquals(4D/3D, scalingFactor, 0.000005D);
+    }
+    
+    @Test
+    public void calculateFinalWeightings() {
+        TestExecutionData data = DummyData.getDummyData();
+        ProximityBasedWeightingSuspiciousnessCalculator calculator =
+                new ProximityBasedWeightingSuspiciousnessCalculator(
+                        ThresholdType.IGNORED, ThresholdType.IGNORED);
+
+        List<Weighting> adjustedWeightings =
+                getAdjustedWeightings(data, calculator);
+        double scalingFactor =
+                calculator.calculateScalingFactor(adjustedWeightings);
+        
+        List<Weighting> finalWeightings = calculator
+                .calculateFinalWeightings(adjustedWeightings, scalingFactor);
+        
+        Collections.sort(finalWeightings);
+        assertTrue(finalWeightings.size() == 4);
+        assertEquals(0.538462 * 4D/3D,
+                finalWeightings.get(0).getWeighitng(), 0.000005D);
+        assertEquals(0.615385 * 4D/3D,
+                finalWeightings.get(1).getWeighitng(), 0.000005D);
+        assertEquals(0.923077 * 4D/3D,
+                finalWeightings.get(2).getWeighitng(), 0.000005D);
+        assertEquals(0.923077 * 4D/3D,
+                finalWeightings.get(3).getWeighitng(), 0.000005D);
+    }
+    
+    @Test
+    public void calculateSuspiciousness() {
+        TestExecutionData data = DummyData.getDummyData();
+        ProximityBasedWeightingSuspiciousnessCalculator calculator =
+                new ProximityBasedWeightingSuspiciousnessCalculator(
+                        ThresholdType.IGNORED, ThresholdType.IGNORED);
+        
+        List<Weighting> finalWeightings =
+                getFinalWeightings(data, calculator);
+        int numFailingTests = data.getTests(false).size();
+        
+        SuspiciousnessScore result = calculator.calculateSuspiciousnessScore(
+                new StatementData(1, "program.c"), data, numFailingTests,
+                finalWeightings);
+        assertEquals(result.getStatement(), new StatementData(1, "program.c"));
+        assertEquals(0.447D, result.getSuspiciousness(), 0.0005D);
+
+        result = calculator.calculateSuspiciousnessScore(
+                new StatementData(2, "program.c"), data, numFailingTests,
+                finalWeightings);
+        assertEquals(result.getStatement(), new StatementData(2, "program.c"));
+        assertEquals(0.447D, result.getSuspiciousness(), 0.0005D);
+
+        result = calculator.calculateSuspiciousnessScore(
+                new StatementData(3, "program.c"), data, numFailingTests,
+                finalWeightings);
+        assertEquals(result.getStatement(), new StatementData(3, "program.c"));
+        assertEquals(0.447D, result.getSuspiciousness(), 0.0005D);
+
+        result = calculator.calculateSuspiciousnessScore(
+                new StatementData(4, "program.c"), data, numFailingTests,
+                finalWeightings);
+        assertEquals(result.getStatement(), new StatementData(4, "program.c"));
+        assertEquals(0.447D, result.getSuspiciousness(), 0.0005D);
+
+        result = calculator.calculateSuspiciousnessScore(
+                new StatementData(5, "program.c"), data, numFailingTests,
+                finalWeightings);
+        assertEquals(result.getStatement(), new StatementData(5, "program.c"));
+        assertEquals(0.447D, result.getSuspiciousness(), 0.0005D);
+
+        result = calculator.calculateSuspiciousnessScore(
+                new StatementData(6, "program.c"), data, numFailingTests,
+                finalWeightings);
+        assertEquals(result.getStatement(), new StatementData(6, "program.c"));
+        assertEquals(0.577D, result.getSuspiciousness(), 0.0005D);
+
+        result = calculator.calculateSuspiciousnessScore(
+                new StatementData(7, "program.c"), data, numFailingTests,
+                finalWeightings);
+        assertEquals(result.getStatement(), new StatementData(7, "program.c"));
+        assertEquals(0.408D, result.getSuspiciousness(), 0.0005D);
+
+        result = calculator.calculateSuspiciousnessScore(
+                new StatementData(8, "program.c"), data, numFailingTests,
+                finalWeightings);
+        assertEquals(result.getStatement(), new StatementData(8, "program.c"));
+        assertEquals(0.378D, result.getSuspiciousness(), 0.0005D);
+
+        result = calculator.calculateSuspiciousnessScore(
+                new StatementData(9, "program.c"), data, numFailingTests,
+                finalWeightings);
+        assertEquals(result.getStatement(), new StatementData(9, "program.c"));
+        assertEquals(0.378D, result.getSuspiciousness(), 0.0005D);
+
+        result = calculator.calculateSuspiciousnessScore(
+                new StatementData(10, "program.c"), data, numFailingTests,
+                finalWeightings);
+        assertEquals(result.getStatement(), new StatementData(10, "program.c"));
+        assertEquals(0.378D, result.getSuspiciousness(), 0.0005D);
+
+        result = calculator.calculateSuspiciousnessScore(
+                new StatementData(11, "program.c"), data, numFailingTests,
+                finalWeightings);
+        assertEquals(result.getStatement(), new StatementData(11, "program.c"));
+        assertEquals(0.378D, result.getSuspiciousness(), 0.0005D);
+
+        result = calculator.calculateSuspiciousnessScore(
+                new StatementData(12, "program.c"), data, numFailingTests,
+                finalWeightings);
+        assertEquals(result.getStatement(), new StatementData(12, "program.c"));
+        assertEquals(0.378D, result.getSuspiciousness(), 0.0005D);
+
+        result = calculator.calculateSuspiciousnessScore(
+                new StatementData(13, "program.c"), data, numFailingTests,
+                finalWeightings);
+        assertEquals(result.getStatement(), new StatementData(13, "program.c"));
+        assertEquals(0.378D, result.getSuspiciousness(), 0.0005D);
     }
     
     private List<Weighting> getUnadjustedWeightings(TestExecutionData data,
@@ -324,5 +465,31 @@ public class ProximityBasedWeightingSuspiciousnessCalculatorTest {
         }
         
         return unadjustedWeightings;
-   }
+    }
+    
+    private List<Weighting> getAdjustedWeightings(TestExecutionData data,
+            ProximityBasedWeightingSuspiciousnessCalculator calculator) {
+        List<Weighting> unadjustedWeightings =
+                getUnadjustedWeightings(data, calculator);
+        ThresholdType lowerThresholdType = calculator.getLowerThresdholdType();
+        ThresholdType upperThresholdType = calculator.getUpperThresdholdType();
+        
+        double lowerThreshold = calculator.calculateThreshold(
+                unadjustedWeightings, lowerThresholdType, false);
+        double upperThreshold = calculator.calculateThreshold(
+                unadjustedWeightings, upperThresholdType, true);
+
+        return calculator.calculateAdjustedWeightings(unadjustedWeightings,
+                lowerThreshold, upperThreshold);
+    }
+    
+    private List<Weighting> getFinalWeightings(TestExecutionData data,
+            ProximityBasedWeightingSuspiciousnessCalculator calculator) {
+        List<Weighting> adjustedWeightings =
+                getAdjustedWeightings(data, calculator);
+        double scalingFactor =
+                calculator.calculateScalingFactor(adjustedWeightings);
+        return calculator.calculateFinalWeightings(adjustedWeightings,
+                scalingFactor);
+    }
 }
