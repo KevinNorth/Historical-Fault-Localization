@@ -2,11 +2,16 @@ package edu.unl.knorth.historical_fault_localization.suspiciousness_calculation.
 
 import edu.unl.knorth.historical_fault_localization.DummyData;
 import edu.unl.knorth.historical_fault_localization.intermediate_data.StatementData;
+import edu.unl.knorth.historical_fault_localization.intermediate_data.TestData;
 import edu.unl.knorth.historical_fault_localization.intermediate_data.TestExecutionData;
 import edu.unl.knorth.historical_fault_localization.suspiciousness_calculation.SuspiciousnessScore;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import static org.junit.Assert.fail;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 public class ProximityBasedWeightingSuspiciousnessCalculatorTest {
@@ -112,4 +117,212 @@ public class ProximityBasedWeightingSuspiciousnessCalculatorTest {
         assertEquals(0.378D, statement12Suspiciousness, 0.0005D);
         assertEquals(0.378D, statement13Suspiciousness, 0.0005D);
     }
+    
+    @Test
+    public void calculateCodeCoverageProximity() {
+        TestExecutionData data = DummyData.getDummyData();
+        ProximityBasedWeightingSuspiciousnessCalculator calculator =
+                new ProximityBasedWeightingSuspiciousnessCalculator(
+                        ThresholdType.IGNORED, ThresholdType.IGNORED);
+        
+        List<TestData> tests = data.getTests();
+        TestData test1 = tests.get(0);
+        TestData test2 = tests.get(1);
+        TestData test3 = tests.get(2);
+        TestData test4 = tests.get(3);
+        TestData test5 = tests.get(4);
+        
+        double codeCoverageProximity =
+                calculator.calculateCodeCoverageProximity(test1, test2);
+        assertEquals(7D/8D, codeCoverageProximity, 0D);
+        
+        codeCoverageProximity =
+                calculator.calculateCodeCoverageProximity(test1, test3);
+        assertEquals(7D/13D, codeCoverageProximity, 0D);
+
+        // This test case is especially important: It's one of only two test
+        // cases where nether set of statements executed by one of the tests is
+        // a subset of the other.
+        codeCoverageProximity =
+                calculator.calculateCodeCoverageProximity(test1, test4);
+        assertEquals(6D/13D, codeCoverageProximity, 0D);
+        codeCoverageProximity = // Put the tests in the other direction too
+                calculator.calculateCodeCoverageProximity(test4, test1);
+        assertEquals(6D/13D, codeCoverageProximity, 0D);
+
+        
+        codeCoverageProximity =
+                calculator.calculateCodeCoverageProximity(test2, test3);
+        assertEquals(8D/13D, codeCoverageProximity, 0D);
+
+        // This test case is especially important: It's one of only two test
+        // cases where nether set of statements executed by one of the tests is
+        // a subset of the other.
+        codeCoverageProximity =
+                calculator.calculateCodeCoverageProximity(test2, test4);
+        assertEquals(7D/13D, codeCoverageProximity, 0D);
+        codeCoverageProximity = // Put the tests in the other direction too
+                calculator.calculateCodeCoverageProximity(test2, test4);
+        assertEquals(7D/13D, codeCoverageProximity, 0D);
+
+        // This test case is especially important: It's the only one where the
+        // set of statements executed by one of the tests is equal to the other.
+        codeCoverageProximity =
+                calculator.calculateCodeCoverageProximity(test4, test5);
+        assertEquals(1D, codeCoverageProximity, 0D);
+        codeCoverageProximity = // Put the tests in the other direction too
+                calculator.calculateCodeCoverageProximity(test5, test4);
+        assertEquals(1D, codeCoverageProximity, 0D);
+    }
+    
+    @Test
+    public void calculateUnadjustedProximityWeight() {
+        TestExecutionData data = DummyData.getDummyData();
+        // Add a failing test to test the algorithm more effectively
+        List<StatementData> newFailingTestStatements = new LinkedList<>();
+        for(int i = 1; i <= 6; i++) {
+            newFailingTestStatements.add(new StatementData(i, "program.c"));
+        }
+        data.addTest(new TestData(false, newFailingTestStatements));
+        
+        ProximityBasedWeightingSuspiciousnessCalculator calculator =
+                new ProximityBasedWeightingSuspiciousnessCalculator(
+                        ThresholdType.IGNORED, ThresholdType.IGNORED);
+        
+        List<TestData> allTests = data.getTests();
+        List<TestData> failedTests = data.getTests(false);
+
+        TestData test = allTests.get(0);
+        double expectedValue = ((7D/13D) + (1D/12D)) / 2D;
+        Weighting actualValue = calculator
+                .calculateUnadjustedProximityWeight(test, failedTests);
+        assertEquals(expectedValue, actualValue.getWeighitng(), 0.000005D);
+        assertTrue(actualValue.getTest() == test);
+
+        test = allTests.get(1);
+        expectedValue = ((8D/13D) + (1D/13D)) / 2D;
+        actualValue = calculator
+                .calculateUnadjustedProximityWeight(test, failedTests);
+        assertEquals(expectedValue, actualValue.getWeighitng(), 0.000005D);
+        assertTrue(actualValue.getTest() == test);
+
+        test = allTests.get(3);
+        expectedValue = ((12D/13D) + (5D/13D)) / 2D;
+        actualValue = calculator
+                .calculateUnadjustedProximityWeight(test, failedTests);
+        assertEquals(expectedValue, actualValue.getWeighitng(), 0.000005D);
+        assertTrue(actualValue.getTest() == test);
+
+        test = allTests.get(4);
+        expectedValue = ((12D/13D) + (5D/13D)) / 2D;
+        actualValue = calculator
+                .calculateUnadjustedProximityWeight(test, failedTests);
+        assertEquals(expectedValue, actualValue.getWeighitng(), 0.000005D);
+        assertTrue(actualValue.getTest() == test);
+
+        // An exception should be thrown when a failing test is passed to
+        // calculateUnadjustedProximityWeight().
+        for(TestData failedTest : failedTests) {
+            try {
+                calculator.calculateUnadjustedProximityWeight(
+                        failedTest, failedTests);
+                fail("No exception was thrown when one should have been for "
+                        + "trying to calculateUnadjustedProximityWeight() "
+                        + "on a failing test.");
+            } catch(IllegalArgumentException err) {
+                // This is the exception that should be thrown
+            } catch(Exception err) {
+                fail("The wrong kind of exception was thrown when an "
+                    + "IllegalArgumentException should have been thrown from "
+                    + "calculateUnadjustedProximityWeight(). Actual exception "
+                    + "thrown was: " + err.toString());
+            }
+        }
+    }
+    
+    @Test
+    public void calculateThreshold() {
+        TestExecutionData data = DummyData.getDummyData();
+        ProximityBasedWeightingSuspiciousnessCalculator calculator =
+                new ProximityBasedWeightingSuspiciousnessCalculator(
+                        ThresholdType.IGNORED, ThresholdType.IGNORED);
+
+        // This test assumes that calculateUnadjustedProximityWeight() works
+        // correctly. If it does not, this test will most likely fail, although
+        // calculateThreshold() may be programmed correctly.
+        List<Weighting> unadjustedWeightings =
+                getUnadjustedWeightings(data, calculator);
+                
+        // Test ignored thresholds
+        double threshold = calculator.calculateThreshold(unadjustedWeightings,
+                ThresholdType.IGNORED, false);
+        assertTrue(threshold == Double.NEGATIVE_INFINITY);
+
+        threshold = calculator.calculateThreshold(unadjustedWeightings,
+                ThresholdType.IGNORED, true);
+        assertTrue(threshold == Double.POSITIVE_INFINITY);
+        
+        // Test quartile values
+        threshold = calculator.calculateThreshold(unadjustedWeightings,
+                ThresholdType.QUARTILE, false);
+        assertEquals(0.57692, threshold, 0.000005D);
+        threshold = calculator.calculateThreshold(unadjustedWeightings,
+                ThresholdType.QUARTILE, true);
+        assertEquals(0.92308, threshold, 0.000005D);
+
+        // Test tail values
+        threshold = calculator.calculateThreshold(unadjustedWeightings,
+                ThresholdType.TAIL, false);
+        assertEquals(0.05769, threshold, 0.000005D);
+        threshold = calculator.calculateThreshold(unadjustedWeightings,
+                ThresholdType.TAIL, true);
+        assertEquals(1.44231, threshold, 0.000005D);
+    }
+    
+    @Test
+    public void calculateAdjustedWeightings() {
+        TestExecutionData data = DummyData.getDummyData();
+        ProximityBasedWeightingSuspiciousnessCalculator calculator =
+                new ProximityBasedWeightingSuspiciousnessCalculator(
+                        ThresholdType.IGNORED, ThresholdType.IGNORED);
+        
+        List<Weighting> unadjustedWeightings =
+                getUnadjustedWeightings(data, calculator);
+        
+        // We don't have to use the calculated threshold values - we can specify
+        // our own values, and the algorithm should still work correctly. So
+        // we test on several of our own thresholds.
+        List<Weighting> results =
+                calculator.calculateAdjustedWeightings(unadjustedWeightings,
+                        Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+        Collections.sort(results);
+        assertTrue(results.size() == 4);
+        assertEquals(0.53846, results.get(0).getWeighitng(), 0.000005D);
+        assertEquals(0.61538, results.get(1).getWeighitng(), 0.000005D);
+        assertEquals(0.92308, results.get(2).getWeighitng(), 0.000005D);
+        assertEquals(0.92308, results.get(3).getWeighitng(), 0.000005D);
+
+        results = calculator.calculateAdjustedWeightings(unadjustedWeightings,
+                        0.55D, 0.90D);
+        Collections.sort(results);
+        assertTrue(results.size() == 4);
+        assertEquals(0.07692, results.get(0).getWeighitng(), 0.000005D);
+        assertEquals(0.07692, results.get(1).getWeighitng(), 0.000005D);
+        assertEquals(0.46154, results.get(2).getWeighitng(), 0.000005D);
+        assertEquals(0.61538, results.get(3).getWeighitng(), 0.000005D);
+
+    }
+    
+    private List<Weighting> getUnadjustedWeightings(TestExecutionData data,
+            ProximityBasedWeightingSuspiciousnessCalculator calculator) {
+        List<Weighting> unadjustedWeightings = new ArrayList<>();
+
+        for(TestData passingTest : data.getTests(true)) {
+            Weighting weighting = calculator.calculateUnadjustedProximityWeight(
+                    passingTest, data.getTests(false));
+            unadjustedWeightings.add(weighting);
+        }
+        
+        return unadjustedWeightings;
+   }
 }

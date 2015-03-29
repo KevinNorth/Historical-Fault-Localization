@@ -142,7 +142,7 @@ public class TestExecutionDataTest {
                 new StatementData(14, "program.c")));
     }
     
-        @Test
+    @Test
     public void addTests() {
         TestExecutionData data = DummyData.getDummyData();
         
@@ -174,5 +174,22 @@ public class TestExecutionDataTest {
                 new StatementData(14, "program.c")));
         assertTrue(data.getStatements().contains(
                 new StatementData(15, "program.c")));
+    }
+    
+    @Test
+    public void getTestsWithPassingFlag() {
+        TestExecutionData data = DummyData.getDummyData();
+        List<TestData> allTests = data.getTests();
+        
+        List<TestData> passingTests = data.getTests(true);
+        assertTrue(passingTests.size() == 4);
+        assertTrue(passingTests.contains(allTests.get(0)));
+        assertTrue(passingTests.contains(allTests.get(1)));
+        assertTrue(passingTests.contains(allTests.get(3)));
+        assertTrue(passingTests.contains(allTests.get(4)));
+        
+        List<TestData> failingTests = data.getTests(false);
+        assertTrue(failingTests.size() == 1);
+        assertTrue(failingTests.contains(allTests.get(2)));
     }
 }

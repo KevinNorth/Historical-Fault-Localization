@@ -18,7 +18,7 @@ import java.util.Set;
  * Proximity Based Weighting of Test Cases to Improve Spectrum Based Fault
  * Localization by A. Bandyopadhyay and S. Ghosh</a>.
  * <p/>
- * All of the calculation methods with no side effects are public instead of
+ * All of the calculation methods with no side effects are protected instead of
  * private to make it easier to test them.
  */
 public class ProximityBasedWeightingSuspiciousnessCalculator
@@ -38,7 +38,8 @@ public class ProximityBasedWeightingSuspiciousnessCalculator
     }
     
     @Override
-    public List<SuspiciousnessScore> calculateSuspiciousness(TestExecutionData testExecutionData) {
+    public List<SuspiciousnessScore> calculateSuspiciousness(
+            TestExecutionData testExecutionData) {
         List<TestData> passingTests = testExecutionData.getTests(true);
         List<TestData> failingTests = testExecutionData.getTests(false);
         
@@ -79,7 +80,7 @@ public class ProximityBasedWeightingSuspiciousnessCalculator
      * @param t2 One of the tests to process.
      * @return The code-coverage proximity between the two tests.
      */
-    public double calculateCodeCoverageProximity(TestData t1, TestData t2) {
+    protected double calculateCodeCoverageProximity(TestData t1, TestData t2) {
         Set<StatementData> t1Statements = t1.getStatementsExecuted();
         Set<StatementData> t2Statements = t2.getStatementsExecuted();
         
@@ -102,7 +103,7 @@ public class ProximityBasedWeightingSuspiciousnessCalculator
      * @throws IllegalArgumentException If <code>test</code> doesn't represent
      * a passing test; that is, if <code>test.getPassing() == false</code>.
      */
-    public Weighting calculateUnadjustedProximityWeight(TestData test,
+    protected Weighting calculateUnadjustedProximityWeight(TestData test,
             List<TestData> failingTests) {
         if(test.getPassed() == false) {
             throw new IllegalArgumentException("Proximity weighing is only "
@@ -127,7 +128,7 @@ public class ProximityBasedWeightingSuspiciousnessCalculator
      * threshold, <code>false</code> to calculate the lower threshold.
      * @return The value to use for the specified threshold.
      */
-    public double calculateThreshold(List<Weighting> unadjustedWeightings,
+    protected double calculateThreshold(List<Weighting> unadjustedWeightings,
             ThresholdType thresholdType, boolean findUpperThreshold) {
         switch(thresholdType) {
             case IGNORED:
@@ -137,22 +138,13 @@ public class ProximityBasedWeightingSuspiciousnessCalculator
                     return Double.NEGATIVE_INFINITY;
                 }
             case QUARTILE:
-                Collections.sort(unadjustedWeightings);
-                int quartileIndex;
-                if(findUpperThreshold) {
-                    quartileIndex = unadjustedWeightings.size() * 3 / 4 - 1;
-                } else {
-                    quartileIndex = unadjustedWeightings.size() / 4 - 1;
-                }
-                return unadjustedWeightings.get(quartileIndex).getWeighitng();
+                return calculateQuartile(unadjustedWeightings,
+                        findUpperThreshold);
             case TAIL:
-                Collections.sort(unadjustedWeightings);
-                int upperQuartileIndex = unadjustedWeightings.size() * 3 / 4 -1;
-                int lowerQuartileIndex = unadjustedWeightings.size() / 4 - 1;
-                double upperQuartile = unadjustedWeightings
-                        .get(upperQuartileIndex).getWeighitng();
-                double lowerQuartile = unadjustedWeightings
-                        .get(lowerQuartileIndex).getWeighitng();
+                double upperQuartile = calculateQuartile(unadjustedWeightings,
+                        true);
+                double lowerQuartile = calculateQuartile(unadjustedWeightings,
+                        false);
                 double interquartileRange = upperQuartile - lowerQuartile;
                 if(findUpperThreshold) {
                     return upperQuartile + (interquartileRange * 1.5);
@@ -164,7 +156,45 @@ public class ProximityBasedWeightingSuspiciousnessCalculator
         }
     }
     
-    public List<Weighting>
+    private double calculateQuartile(List<Weighting> weightings,
+            boolean findThirdQuartile) {
+        Collections.sort(weightings);
+        if(weightings.size() % 2 == 1) {
+            if(findThirdQuartile) {
+                int index = weightings.size() * 3 / 4 - 1;
+                return weightings.get(index).getWeighitng();
+            } else {
+                int index = weightings.size() / 4 - 1;
+                return weightings.get(index).getWeighitng();
+            }
+        } else {
+            if(findThirdQuartile) {
+                int index1 = weightings.size() * 3 / 4 - 1;
+                int index2 = weightings.size() * 3 / 4;
+                double value1 = weightings.get(index1).getWeighitng();
+                double value2 = weightings.get(index2).getWeighitng();
+                return (value1 + value2) / 2D;
+            } else {
+                int index1 = weightings.size() / 4 - 1;
+                int index2 = weightings.size() / 4;
+                double value1 = weightings.get(index1).getWeighitng();
+                double value2 = weightings.get(index2).getWeighitng();
+                return (value1 + value2) / 2D;
+            }
+        }
+    }
+    
+    /**
+     * Uses the threshold values to adjust very large and very small weightings
+     * to more moderate values.
+     * @param unadjustedWeightings The weightings to run through the adjustment
+     * algorithm.
+     * @param lowerThreshold The value of the lower threshold.
+     * @param upperThreshold The value of the upper threshold.
+     * @return All of the weightings, with weightings with values that are
+     * higher or lower than the thresholds adjusted to more moderate values.
+     */
+    protected List<Weighting>
         calculateAdjustedWeightings(List<Weighting> unadjustedWeightings,
                 double lowerThreshold, double upperThreshold) {
         // We won't be sorting this list, so we can use a LinkedList for
@@ -190,7 +220,7 @@ public class ProximityBasedWeightingSuspiciousnessCalculator
         return adjustedWeightings;
     }
         
-    public double calculateScalingFactor(List<Weighting> adjustedWeightings) {
+    protected double calculateScalingFactor(List<Weighting> adjustedWeightings) {
         double sum = 0D;
         
         for(Weighting adjustedWeighting : adjustedWeightings) {
@@ -200,7 +230,7 @@ public class ProximityBasedWeightingSuspiciousnessCalculator
         return ((double) adjustedWeightings.size()) / sum;
     }
     
-    public List<Weighting> calculateFinalWeightings(
+    protected List<Weighting> calculateFinalWeightings(
             List<Weighting> adjustedWeightings, double scalingFactor) {
         // We won't be sorting this list, so we can use a LinkedList for
         // faster insertions instead of an ArrayList for faster rearranging
@@ -217,7 +247,7 @@ public class ProximityBasedWeightingSuspiciousnessCalculator
         return finalWeightings;
     }
     
-    public SuspiciousnessScore calculateSuspiciousnessScore(
+    protected SuspiciousnessScore calculateSuspiciousnessScore(
             StatementData statement, TestExecutionData testExecutionData,
             int numFailingTests, List<Weighting> finalWeightings) {
         List<TestData> relevantFailingTests =
