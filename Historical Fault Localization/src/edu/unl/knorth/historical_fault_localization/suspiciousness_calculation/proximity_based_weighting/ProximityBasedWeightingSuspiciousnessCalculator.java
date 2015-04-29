@@ -279,7 +279,6 @@ public class ProximityBasedWeightingSuspiciousnessCalculator
         
         SuspiciousnessScore result =
                 new SuspiciousnessScore(statement, suspiciousness);
-        System.out.println(result);
         return result;
     }
 

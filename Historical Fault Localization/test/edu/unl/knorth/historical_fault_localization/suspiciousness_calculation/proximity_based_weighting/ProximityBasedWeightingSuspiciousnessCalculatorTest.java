@@ -103,19 +103,19 @@ public class ProximityBasedWeightingSuspiciousnessCalculatorTest {
             }
         }
         
-        assertEquals(0.447D, statement1Suspiciousness, 0.0005D);
-        assertEquals(0.447D, statement2Suspiciousness, 0.0005D);
-        assertEquals(0.447D, statement3Suspiciousness, 0.0005D);
-        assertEquals(0.447D, statement4Suspiciousness, 0.0005D);
-        assertEquals(0.447D, statement5Suspiciousness, 0.0005D);
-        assertEquals(0.577D, statement6Suspiciousness, 0.0005D);
-        assertEquals(0.408D, statement7Suspiciousness, 0.0005D);
-        assertEquals(0.378D, statement8Suspiciousness, 0.0005D);
-        assertEquals(0.378D, statement9Suspiciousness, 0.0005D);
-        assertEquals(0.378D, statement10Suspiciousness, 0.0005D);
-        assertEquals(0.378D, statement11Suspiciousness, 0.0005D);
-        assertEquals(0.378D, statement12Suspiciousness, 0.0005D);
-        assertEquals(0.378D, statement13Suspiciousness, 0.0005D);
+        assertEquals(0.537D, statement1Suspiciousness, 0.0005D);
+        assertEquals(0.537D, statement2Suspiciousness, 0.0005D);
+        assertEquals(0.537D, statement3Suspiciousness, 0.0005D);
+        assertEquals(0.537D, statement4Suspiciousness, 0.0005D);
+        assertEquals(0.537D, statement5Suspiciousness, 0.0005D);
+        assertEquals(0.628D, statement6Suspiciousness, 0.0005D);
+        assertEquals(0.483D, statement7Suspiciousness, 0.0005D);
+        assertEquals(0.447D, statement8Suspiciousness, 0.0005D);
+        assertEquals(0.447D, statement9Suspiciousness, 0.0005D);
+        assertEquals(0.447D, statement10Suspiciousness, 0.0005D);
+        assertEquals(0.447D, statement11Suspiciousness, 0.0005D);
+        assertEquals(0.447D, statement12Suspiciousness, 0.0005D);
+        assertEquals(0.447D, statement13Suspiciousness, 0.0005D);
     }
     
     @Test
@@ -379,79 +379,79 @@ public class ProximityBasedWeightingSuspiciousnessCalculatorTest {
                 new StatementData(1, "program.c"), data, numFailingTests,
                 finalWeightings);
         assertEquals(result.getStatement(), new StatementData(1, "program.c"));
-        assertEquals(0.447D, result.getSuspiciousness(), 0.0005D);
+        assertEquals(0.537D, result.getSuspiciousness(), 0.0005D);
 
         result = calculator.calculateSuspiciousnessScore(
                 new StatementData(2, "program.c"), data, numFailingTests,
                 finalWeightings);
         assertEquals(result.getStatement(), new StatementData(2, "program.c"));
-        assertEquals(0.447D, result.getSuspiciousness(), 0.0005D);
+        assertEquals(0.537D, result.getSuspiciousness(), 0.0005D);
 
         result = calculator.calculateSuspiciousnessScore(
                 new StatementData(3, "program.c"), data, numFailingTests,
                 finalWeightings);
         assertEquals(result.getStatement(), new StatementData(3, "program.c"));
-        assertEquals(0.447D, result.getSuspiciousness(), 0.0005D);
+        assertEquals(0.537D, result.getSuspiciousness(), 0.0005D);
 
         result = calculator.calculateSuspiciousnessScore(
                 new StatementData(4, "program.c"), data, numFailingTests,
                 finalWeightings);
         assertEquals(result.getStatement(), new StatementData(4, "program.c"));
-        assertEquals(0.447D, result.getSuspiciousness(), 0.0005D);
+        assertEquals(0.537D, result.getSuspiciousness(), 0.0005D);
 
         result = calculator.calculateSuspiciousnessScore(
                 new StatementData(5, "program.c"), data, numFailingTests,
                 finalWeightings);
         assertEquals(result.getStatement(), new StatementData(5, "program.c"));
-        assertEquals(0.447D, result.getSuspiciousness(), 0.0005D);
+        assertEquals(0.537D, result.getSuspiciousness(), 0.0005D);
 
         result = calculator.calculateSuspiciousnessScore(
                 new StatementData(6, "program.c"), data, numFailingTests,
                 finalWeightings);
         assertEquals(result.getStatement(), new StatementData(6, "program.c"));
-        assertEquals(0.577D, result.getSuspiciousness(), 0.0005D);
+        assertEquals(0.628D, result.getSuspiciousness(), 0.0005D);
 
         result = calculator.calculateSuspiciousnessScore(
                 new StatementData(7, "program.c"), data, numFailingTests,
                 finalWeightings);
         assertEquals(result.getStatement(), new StatementData(7, "program.c"));
-        assertEquals(0.408D, result.getSuspiciousness(), 0.0005D);
+        assertEquals(0.483D, result.getSuspiciousness(), 0.0005D);
 
         result = calculator.calculateSuspiciousnessScore(
                 new StatementData(8, "program.c"), data, numFailingTests,
                 finalWeightings);
         assertEquals(result.getStatement(), new StatementData(8, "program.c"));
-        assertEquals(0.378D, result.getSuspiciousness(), 0.0005D);
+        assertEquals(0.447D, result.getSuspiciousness(), 0.0005D);
 
         result = calculator.calculateSuspiciousnessScore(
                 new StatementData(9, "program.c"), data, numFailingTests,
                 finalWeightings);
         assertEquals(result.getStatement(), new StatementData(9, "program.c"));
-        assertEquals(0.378D, result.getSuspiciousness(), 0.0005D);
+        assertEquals(0.447D, result.getSuspiciousness(), 0.0005D);
 
         result = calculator.calculateSuspiciousnessScore(
                 new StatementData(10, "program.c"), data, numFailingTests,
                 finalWeightings);
         assertEquals(result.getStatement(), new StatementData(10, "program.c"));
-        assertEquals(0.378D, result.getSuspiciousness(), 0.0005D);
+        assertEquals(0.447D, result.getSuspiciousness(), 0.0005D);
 
         result = calculator.calculateSuspiciousnessScore(
                 new StatementData(11, "program.c"), data, numFailingTests,
                 finalWeightings);
         assertEquals(result.getStatement(), new StatementData(11, "program.c"));
-        assertEquals(0.378D, result.getSuspiciousness(), 0.0005D);
+        assertEquals(0.447D, result.getSuspiciousness(), 0.0005D);
 
         result = calculator.calculateSuspiciousnessScore(
                 new StatementData(12, "program.c"), data, numFailingTests,
                 finalWeightings);
         assertEquals(result.getStatement(), new StatementData(12, "program.c"));
-        assertEquals(0.378D, result.getSuspiciousness(), 0.0005D);
+        assertEquals(0.447D, result.getSuspiciousness(), 0.0005D);
 
         result = calculator.calculateSuspiciousnessScore(
                 new StatementData(13, "program.c"), data, numFailingTests,
                 finalWeightings);
         assertEquals(result.getStatement(), new StatementData(13, "program.c"));
-        assertEquals(0.378D, result.getSuspiciousness(), 0.0005D);
+        assertEquals(0.447D, result.getSuspiciousness(), 0.0005D);
     }
     
     private List<Weighting> getUnadjustedWeightings(TestExecutionData data,
