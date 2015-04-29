@@ -13,6 +13,9 @@ hs_err_pid*
 /Historical Fault Localization/nbproject/private/
 /Historical Fault Localization/build/
 
+# ignore temp directory
+Historical\ Fault\ Localization/temp
+
 # include library files in the repository
 !Historical\ Fault\ Localization/lib/*.jar
 !Historical\ Fault\ Localization/lib/*.war
