@@ -1,6 +1,7 @@
 package edu.unl.knorth.historical_fault_localization.test_executor;
 
 import edu.unl.knorth.historical_fault_localization.intermediate_data.TestExecutionData;
+import edu.unl.knorth.historical_fault_localization.utility.StreamGobbler;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
@@ -38,7 +39,8 @@ import java.util.concurrent.TimeUnit;
  * <code>TestOutputParser.java</code>.</li></ol>
  */
 public final class TestExecutor {
-    private final String DEFAULT_OUTPUT_FILE_LOCATION = "temp/test_out.txt";
+    private final String DEFAULT_OUTPUT_FILE_LOCATION
+            = System.getProperty("user.dir") + "/temp/test_out.txt";
     
     /**
      * Executes the test harness script, using a default output file path.
@@ -66,13 +68,20 @@ public final class TestExecutor {
             long timeoutLength, String outputFilePath) throws IOException {
         Runtime rt = Runtime.getRuntime();
         
-        String commandLineString = buildCommandLineString(testHarnessPath,
+        String[] commandLineString = buildCommandLineString(testHarnessPath,
                 workingDirectoryPath, commitHash, timestamp, outputFilePath);
         Process pr = rt.exec(commandLineString);
+
+        // Output the process's output to STDOUT so the end user can see it
+        StreamGobbler outputGobbler = new StreamGobbler(pr.getInputStream());
+        StreamGobbler errorGobbler = new StreamGobbler(pr.getErrorStream());
+
+        outputGobbler.start();
+        errorGobbler.start();
         
-        try {
+        try {            
             boolean success = pr.waitFor(timeoutLength, TimeUnit.MILLISECONDS);
-        
+            
             if(success) {
                 return new TestOutputParser()
                         .parseTestOutputFile(outputFilePath);
@@ -83,26 +92,28 @@ public final class TestExecutor {
         } catch(InterruptedException err) {
             throw new IOException("Test harness was interrupted while executing"
                     + " on commit " + commitHash, err);
+        } finally {
+            try {
+                outputGobbler.join(100);
+            } catch(InterruptedException err) { /* Swallow on purpose */ }
+            try {
+                errorGobbler.join(100);
+            } catch(InterruptedException err) { /* Swallow on purpose */ }
         }
     }
     
-    protected String buildCommandLineString(String testHarnessPath,
+    protected String[] buildCommandLineString(String testHarnessPath,
             String workingDirectoryPath, String commitHash, String timestamp,
             String outputFilePath) {
-        StringBuilder str = new StringBuilder();
+        String[] str = new String[5];
         
-        str.append("./");
-        str.append(testHarnessPath);
-        str.append(" --work-directory=");
-        str.append(workingDirectoryPath);
-        str.append(" --commit-hash=");
-        str.append(commitHash);
-        str.append(" --commit-timestamp=");
-        str.append(timestamp);
-        str.append(" --output_file=");
-        str.append(outputFilePath);
+        str[0] = testHarnessPath;
+        str[1] = "--work-directory=" + workingDirectoryPath;
+        str[2] = "--commit-hash=" + commitHash;
+        str[3] = "--commit-timestamp=" + timestamp;
+        str[4] = "--output_file=" + outputFilePath;
         
-        return str.toString();
+        return str;
     }
     
 }
