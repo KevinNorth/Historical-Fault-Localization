@@ -19,18 +19,6 @@ public class Main {
      * @param args the command line arguments
      */
     public static void main(String[] args) throws Exception {
-        File currentDir = new File(System.getProperty("user.dir"));
-        File parentDir = currentDir.getParentFile();
-        
-        String testHarnessPath = parentDir.getAbsolutePath() + "/historical-fault-localization-target-ruby-app/test_harness/code_coverage.rb";
-        String workingDirectory = parentDir.getAbsolutePath() + "/historical-fault-localization-target-ruby-app";
-        String commitHash = "asdf";
-        String timestamp = "asdf";
-        
-        TestExecutionData results = new TestExecutor()
-                .executeTests(testHarnessPath, workingDirectory, commitHash,
-                        timestamp, 30000L);
-        
-        System.out.println(results);
+
     }
 }

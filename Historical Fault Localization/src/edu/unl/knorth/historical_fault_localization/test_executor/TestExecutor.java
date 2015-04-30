@@ -153,7 +153,7 @@ public final class TestExecutor {
      * @return An array of Strings that can be passed to
      * <code>Runtime.exec()</code> to run the test harness.
      */
-    protected String[] buildCommandLineStrings(String testHarnessPath,
+    private String[] buildCommandLineStrings(String testHarnessPath,
             String workingDirectoryPath, String commitHash, String timestamp,
             String outputFilePath) {
         String[] str = new String[5];
