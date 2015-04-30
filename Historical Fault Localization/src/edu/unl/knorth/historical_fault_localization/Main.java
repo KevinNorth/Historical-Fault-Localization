@@ -7,6 +7,7 @@ package edu.unl.knorth.historical_fault_localization;
 
 import edu.unl.knorth.historical_fault_localization.intermediate_data.TestExecutionData;
 import edu.unl.knorth.historical_fault_localization.test_executor.TestExecutor;
+import java.io.File;
 
 /**
  *
@@ -18,8 +19,11 @@ public class Main {
      * @param args the command line arguments
      */
     public static void main(String[] args) throws Exception {
-        String testHarnessPath = "/Users/ThePondermatic/Documents/Programming/historical_fault_localization_ruby_app/test_harness/code_coverage.rb";
-        String workingDirectory = "/Users/ThePondermatic/Documents/Programming/historical_fault_localization_ruby_app";
+        File currentDir = new File(System.getProperty("user.dir"));
+        File parentDir = currentDir.getParentFile();
+        
+        String testHarnessPath = parentDir.getAbsolutePath() + "/historical-fault-localization-target-ruby-app/test_harness/code_coverage.rb";
+        String workingDirectory = parentDir.getAbsolutePath() + "/historical-fault-localization-target-ruby-app";
         String commitHash = "asdf";
         String timestamp = "asdf";
         

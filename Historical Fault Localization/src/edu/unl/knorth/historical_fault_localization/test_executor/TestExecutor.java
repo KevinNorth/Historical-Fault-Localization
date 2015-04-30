@@ -44,16 +44,25 @@ public final class TestExecutor {
     
     /**
      * Executes the test harness script, using a default output file path.
+     * <p/>
+     * As a side effect, this method will output to STDOUT anything that the
+     * test harness outputs to its STDOUT or STDERR streams.
      * @param testHarnessPath The path to the test harness script.
      * @param workingDirectoryPath The path to the target program repository
      * that will be passed as a parameter to the test harness script.
      * @param commitHash The hash of the commit being processed in the
      * target program's git repository. Passed as an argument to the test
      * harness script.
-     * @param timestamp
-     * @param timeoutLength
-     * @return
-     * @throws IOException 
+     * @param timestamp The timestamp for when the commit being processed was
+     * committed. It should be formatted in the format produced by executing
+     * <code>git show --format="%cD"</code>
+     * @param timeoutLength The amount of time, in milliseconds, to allow the
+     * test harness to run before timing it out. If the test harness times out,
+     * its process will be killed and an IOException will be thrown.
+     * @return A <code>TestExecutionData</code> representing data collected from
+     * the test harness.
+     * @throws IOException If there was a problem running the test harness or
+     * parsing the output file it generates.
      */
     public TestExecutionData executeTests(String testHarnessPath,
             String workingDirectoryPath, String commitHash, String timestamp,
@@ -63,12 +72,36 @@ public final class TestExecutor {
                 timestamp, timeoutLength, DEFAULT_OUTPUT_FILE_LOCATION);
     }
     
+    /**
+     * Executes the test harness script.
+     * <p/>
+     * As a side effect, this method will output to STDOUT anything that the
+     * test harness outputs to its STDOUT or STDERR streams.
+     * @param testHarnessPath The path to the test harness script.
+     * @param workingDirectoryPath The path to the target program repository
+     * that will be passed as a parameter to the test harness script.
+     * @param commitHash The hash of the commit being processed in the
+     * target program's git repository. Passed as an argument to the test
+     * harness script.
+     * @param timestamp The timestamp for when the commit being processed was
+     * committed. It should be formatted in the format produced by executing
+     * <code>git show --format="%cD"</code>
+     * @param timeoutLength The amount of time, in milliseconds, to allow the
+     * test harness to run before timing it out. If the test harness times out,
+     * its process will be killed and an IOException will be thrown.
+     * @param outputFilePath The path to the location where the test harness
+     * should save its output file.
+     * @return A <code>TestExecutionData</code> representing data collected from
+     * the test harness.
+     * @throws IOException If there was a problem running the test harness or
+     * parsing the output file it generates.
+     */
     public TestExecutionData executeTests(String testHarnessPath,
             String workingDirectoryPath, String commitHash, String timestamp,
             long timeoutLength, String outputFilePath) throws IOException {
         Runtime rt = Runtime.getRuntime();
         
-        String[] commandLineString = buildCommandLineString(testHarnessPath,
+        String[] commandLineString = buildCommandLineStrings(testHarnessPath,
                 workingDirectoryPath, commitHash, timestamp, outputFilePath);
         Process pr = rt.exec(commandLineString);
 
@@ -86,6 +119,7 @@ public final class TestExecutor {
                 return new TestOutputParser()
                         .parseTestOutputFile(outputFilePath);
             } else {
+                pr.destroy();
                 throw new IOException("Test harness timed out while executing"
                         + " on commit" + commitHash);
             }
@@ -102,7 +136,24 @@ public final class TestExecutor {
         }
     }
     
-    protected String[] buildCommandLineString(String testHarnessPath,
+    /**
+     * Prepares the strings that will be used in a command to tell the OS to run
+     * the test harness.
+     * @param testHarnessPath The path to the test harness script.
+     * @param workingDirectoryPath The path to the target program repository
+     * that will be passed as a parameter to the test harness script.
+     * @param commitHash The hash of the commit being processed in the
+     * target program's git repository. Passed as an argument to the test
+     * harness script.
+     * @param timestamp The timestamp for when the commit being processed was
+     * committed. It should be formatted in the format produced by executing
+     * <code>git show --format="%cD"</code>
+     * @param outputFilePath The path to the location where the test harness
+     * should save its output file.
+     * @return An array of Strings that can be passed to
+     * <code>Runtime.exec()</code> to run the test harness.
+     */
+    protected String[] buildCommandLineStrings(String testHarnessPath,
             String workingDirectoryPath, String commitHash, String timestamp,
             String outputFilePath) {
         String[] str = new String[5];
