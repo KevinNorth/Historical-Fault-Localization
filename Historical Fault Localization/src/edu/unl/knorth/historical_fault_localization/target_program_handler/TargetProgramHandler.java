@@ -108,6 +108,7 @@ public class TargetProgramHandler {
     public List<TestExecutionDataFromCommit> handleProgram(String gitArguments,
             String testHarnessPath, String workingDirectoryPath,
             long timeoutLength, String outputPath) {
+        // First, we run git log to get all of the commits we'll process
         List<String[]> hashesAndDates;
         try {
             hashesAndDates = getCommitsList(gitArguments, workingDirectoryPath);
@@ -126,6 +127,9 @@ public class TargetProgramHandler {
         TestExecutor testExecutor = new TestExecutor();
         List<TestExecutionDataFromCommit> results = new ArrayList<>();
 
+        // Now, we repeatedly run get checkout to checkout different commits,
+        // then run the test harness script to collect test coverage information
+        // for each commit.
         int currentCommitNumber = 1;
         for(String[] hashAndDate : hashesAndDates) {
             String hash = hashAndDate[0];

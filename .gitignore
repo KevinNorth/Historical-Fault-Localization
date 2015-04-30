@@ -15,6 +15,9 @@ hs_err_pid*
 /Historical Fault Localization/nbproject/private/
 /Historical Fault Localization/build/
 
+# ignore output directory
+Historical\ Fault\ Localization/out
+
 # ignore temp directory
 Historical\ Fault\ Localization/temp
 
