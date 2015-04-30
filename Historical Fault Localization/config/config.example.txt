@@ -1,0 +1,73 @@
+# HOW TO USE THE CONFIG FILE
+# Configuration options can appear in any order.
+# Use "#" for comments. (Any line that does not start with a recognized
+# parameter name will be ignored. Using "#" makes comments easily identifiable
+# and guarantees that they will never accidentally match a config option.)
+#
+# The format for a configuraion option is:
+# parameterName value
+#
+# The only optional parameter is testHarnessOutput.
+
+# The command line arguments appended to `git log --format=%H-%cd` in order to
+# generate the list of commits that will be processed for the target program.
+gitArguments --reverse --date-order faults ^master
+
+# The path to the script that will be called in order to execute the target
+# program's tests and collect coverage data on them.
+testHarnessPath ../historical-fault-localization-target-ruby-app/test_harness/code_coverage.rb
+
+# The path to the root of the target program's git repository. This path will
+# also be passed to the test harness script as an argument, letting it know
+# where to look for the program to test.
+targetProgramDirectory ../historical-fault-localization-target-ruby-app
+
+# The amount of time, in milliseconds, to allow the test harness to run before
+# timing it out and proceeding to the next commit to test. Must be a long.
+testTimeout 60000
+
+# Set to "ochiai" to use the Ochiai suspiciosness calculation algorithm. Set to
+# "proximity" to use the proximity-based weighting algorithm.
+suspiciousnessAlgorithm proximity
+
+# Set to:
+# "none" to indicate that the lower bound should be ignored.
+# "quartile" to indicate that the lower bound should be the third quartile.
+# "tail" to indicate that the lower quartile should be the lower outliers.
+# This parameter is only required if suspiciousnessAlgorithm is set to
+# "proximity".
+lowerBound none
+
+# Set to:
+# "none" to indicate that the upper bound should be ignored.
+# "quartile" to indicate that the upper bound should be the first quartile.
+# "tail" to indicate that the upper quartile should be the upper outliers.
+# This parameter is only required if suspiciousnessAlgorithm is set to
+# "proximity".
+upperBound none
+
+# How many pixels tall each bar of color representing a statement in the final
+# visualization should be. Must be an integer.
+statementHeight 10
+
+# How many pixels wide each bar of color representing a statement in the final
+# visualization should be. Must be an integer.
+statementWidth 200
+
+# How many pixles there should be between stacks representing different files in
+# the visualization. (The stacks are placed in a horizontal row.) Must be an
+# integer.
+fileMargin 50
+
+# The font size to use for the labels indicating which horizontal stack
+# corresponds to which file. Must be an integer.
+fileFontSize 24
+
+# The directory to save the visualization images to. This string must end with a
+# forward slash "/".
+imageOutputDirectory out/
+
+# OPTIONAL
+# The location of the file that the test harness script should save its output
+# to so the Historical Fault Localization program can analyze it.
+# testHarnessOutput temp/out.txt
