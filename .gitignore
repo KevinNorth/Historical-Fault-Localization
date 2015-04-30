@@ -18,6 +18,10 @@ hs_err_pid*
 # ignore temp directory
 Historical\ Fault\ Localization/temp
 
+# ignore the dummy app used for testing
+# it is versioned controlled itself elsewhere
+historical-fault-localization-target-ruby-app/*
+
 # include library files in the repository
 !Historical\ Fault\ Localization/lib/*.jar
 !Historical\ Fault\ Localization/lib/*.war
