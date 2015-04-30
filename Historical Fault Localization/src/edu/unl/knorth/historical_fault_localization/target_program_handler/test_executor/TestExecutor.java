@@ -1,4 +1,4 @@
-package edu.unl.knorth.historical_fault_localization.test_executor;
+package edu.unl.knorth.historical_fault_localization.target_program_handler.test_executor;
 
 import edu.unl.knorth.historical_fault_localization.intermediate_data.TestExecutionData;
 import edu.unl.knorth.historical_fault_localization.utility.StreamGobbler;
@@ -39,7 +39,7 @@ import java.util.concurrent.TimeUnit;
  * <code>TestOutputParser.java</code>.</li></ol>
  */
 public final class TestExecutor {
-    private final String DEFAULT_OUTPUT_FILE_LOCATION
+    public static final String DEFAULT_OUTPUT_FILE_LOCATION
             = System.getProperty("user.dir") + "/temp/test_out.txt";
     
     /**

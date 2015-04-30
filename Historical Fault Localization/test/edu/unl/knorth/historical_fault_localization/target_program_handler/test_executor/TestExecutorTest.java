@@ -1,4 +1,4 @@
-package edu.unl.knorth.historical_fault_localization.test_executor;
+package edu.unl.knorth.historical_fault_localization.target_program_handler.test_executor;
 
 import edu.unl.knorth.historical_fault_localization.intermediate_data.TestExecutionData;
 import java.io.File;
