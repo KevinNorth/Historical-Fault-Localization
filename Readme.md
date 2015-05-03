@@ -1,4 +1,4 @@
-#Historical-Fault-Localization
+#Historical Fault Localization Tool
 Implements proximity based weighting fault localization (http://dx.doi.org/10.1109/ASE.2011.6100088) and applies the algorithm to sets of commits in a git repository.
 
 ##Table of Contents
@@ -9,7 +9,7 @@ Implements proximity based weighting fault localization (http://dx.doi.org/10.11
  - [How to Configure the Program](#how-to-configure-the-program)
  - [How to Set Up a Target Program](#how-to-set-up-a-target-program)
 
-If you're reading this document in a text editor instead of a Markdown viewer, you can Find i.e. "#How to Compile the Program" in order to jump to a section.
+If you're reading this document in a text editor instead of a Markdown viewer, you can Find i.e. `#How to Compile the Program` in order to jump to a section.
 
 #Introduction
 
@@ -23,12 +23,12 @@ Finally, this fault localization information is passed to a visualization tool m
 
 This program is made up of four primary components:
 
- 1. The **Target Program Handler** runs Git commands in order to checkout the requested commits in the target program's Git repository.
- 2. The **Test Executor** asks the target program to run its tests and send back test coverage data.
- 3. The **Suspiciousness Calculator** performs fault localization and calculates the suspiciousness of lines of code.
- 4. The **Visualizer** outputs images showing the results of the fault localization.
+ 1. The [Target Program Handler](#target-program-handler) runs Git commands in order to checkout the requested commits in the target program's Git repository.
+ 2. The [Test Executor](#test-executor) asks the target program to run its tests and send back test coverage data.
+ 3. The [Suspiciousness Calculator](#suspiciousness-calculator) performs fault localization and calculates the suspiciousness of lines of code.
+ 4. The [Visualizer](#visualizer) outputs images showing the results of the fault localization.
 
-## Target Program Handler
+##Target Program Handler
 The Target Program Handler's code is located in the `edu.unl.knorth.historical_fault_localization.target_program_handler` package.
 
 The Target Program Handler performs three tasks. First, it starts a process that runs `git log` in order to obtain a list of commits in the target program's repository that should be analyzed. Then, for each of those commits, the Target Program Handler performs each of the next two tasks. It starts a process running `git checkout` in order to checkout, one at a time, each of the commits obtained earlier. Then, it asks the Test Executor to run the target program's tests in the currently checked-out version of the target program.
@@ -38,13 +38,13 @@ The Test Executor code is located in the `edu.unl.knorth.historical_fault_locali
 
 The Test Executor runs the target program's tests. It does so by running a script, called the test harness script, that instructs the target program on how to run its tests and collect coverage data for them.
 
-The Test Executor does not provide the test harness script! The end user needs to write the test harness script him- or herself. This has the advantage that, by writing an appropriate test harness script, the Historical Fault Localization Tool is compatible with target programs written in any language and using any test environment. The main disadvantage is that this approach requires more work from the end user.
+The Test Executor does not provide the test harness script! The end user needs to write the test harness script him- or herself. This has the advantage that, when provided with an appropriate test harness script, the Historical Fault Localization Tool is compatible with target programs written in any language and using any test environment. The main disadvantage is that this approach requires more work from the end user.
 
 ###Test Harness Script
 
 Every time it is run, the test harness script will receive information about where the tests are and what version of the program under test is being analyzed. The test harness script is expected to run the target program's tests and collect information about which lines of code are run by each test. This information should then be put into a file in a particular location, which the Test Executor will subsequently read in order to record the test coverage data.
 
-The Test Executor assumes that the test harness script adheres to a particular. It is up to the end user to follow this specification. See the [How to Set Up a Target Program](#how-to-set-up-a-target-program) section to read the test harness' specification.
+The Test Executor assumes that the test harness script adheres to a particular specification. It is up to the end user to follow this specification. See the [How to Set Up a Target Program](#how-to-set-up-a-target-program) section to read the test harness' specification.
 
 ##Suspiciousness Calculator
 
@@ -60,9 +60,7 @@ If all of the tests pass for a particular commit, the Suspiciousness Calculator 
 
 The Visualizer's source code is in the `edu.unl.knorth.historical_fault_localization.visualizer` package.
 
-The Visualizer produces a visualization of the fault localization data.
-
-It produces one image for each commit that was analyzed. These files are named `[order processed]-[commit SHA1 hash].png`, indicating which commit each image correspondes to. For example, if commit `667ffe5f6167352b028e5af83acd7ce52786a497` is the first commit the Target Program Handler checked out, the Visualizer will name that commit's visualization `1-667ffe5f6167352b028e5af83acd7ce52786a497.png`.
+The Visualizer produces produces one image for each commit that was analyzed. These files are named `[order processed]-[commit SHA1 hash].png`, indicating which commit each image correspondes to. For example, if commit `667ffe5f6167352b028e5af83acd7ce52786a497` is the first commit the Target Program Handler checked out, the Visualizer will name that commit's visualization `1-667ffe5f6167352b028e5af83acd7ce52786a497.png`.
 
 Each individual image is made up of multiple vertical bars. Each of these bars represents a single file in the target program's source code. The name of the file corresponding to each bar is shown at the top of the bar.
 
@@ -81,9 +79,11 @@ where 0° is pure red and 240° is pure blue. See [https://en.wikipedia.org/wiki
 
 #How to Compile the Program
 
-From the `Historical Fault Localization` directory, run
+From the directory this Readme is located in, run
 
     ant jar
+
+The compiled program will be placed in `dist/Historical_Fault_Localization.jar`.
 
 #How to Run the Program
 
@@ -93,7 +93,7 @@ To run the program:
  1. Prepare the configuration file. See [How to Configure the Program](#how-to-configure-the-program) for instructions.
  2. Run
 
-    java -jar [path to compiled program] [path to configuration file]
+      java -jar [path to compiled program] [path to configuration file]
 
  where
     - `path to compiled program` is the location of your compiled program's jar.
@@ -136,11 +136,11 @@ This is a list of key-value pairs that the configuration file will recognize:
  - `gitArguments`: To collect a list of commits to process, the Historical Fault Localization Tool will run `git log --format=%H-%cd`. Without any arguments, this will produce a list of all commits in the project in descending date order, which might be more commits than desired or a different order than desired.
   So, to allow you to decide which commits should be used and in what order they should be used, the string you set with `gitArguments` will be appended to the end of `git log --format=%H-%cD`. For example, to use the commits returned by `git log --format=%h%cD --since=2015-01-01 --reverse --date-order`, set the parameter accordingly:
 
-    gitArgument --since=2015-01-01 --reverse --date-order
+      gitArgument --since=2015-01-01 --reverse --date-order
 
   This configuration option is mandatory, so if you don't want to set any options, simply use
 
-    gitArgument --date-order
+      gitArgument --date-order
 
   which preserves `git log`'s default behavior.
 
@@ -152,11 +152,11 @@ This is a list of key-value pairs that the configuration file will recognize:
    2. Set to `proximity` in order to use the proximity-based weighting algorithm.
  - `lowerBound` (optional): This configuration option is only required if you set `suspiciousnessAlgorithm` to `proximity`. Determines how the lower bound for unadjusted weightings is determined. Set to one of three values:
    1. Set to `none` to indicate that the lower bound should be ignored.
-   2. Set to `quartile" to indicate that the lower bound should be the third quartile.
+   2. Set to `quartile` to indicate that the lower bound should be the third quartile.
    3. Set to `tail` to indicate that the lower quartile should be the lower outliers.
  - `upperBound` (optional): This configuration option is only required if you set `suspiciousnessAlgorithm` to `proximity`. Determines how the upper bound for unadjusted weightings is determined. Set to one of three values:
    1. Set to `none` to indicate that the upper bound should be ignored.
-   2. Set to `quartile" to indicate that the upper bound should be the first quartile.
+   2. Set to `quartile` to indicate that the upper bound should be the first quartile.
    3. Set to `tail` to indicate that the upper quartile should be the upper outliers.
  - `statementHeight`: How many pixels tall each statement's horizontal bar should be in the visualization.
  - `statementWidth`: How many pixels wide each statement's horizontal bar should be in the visualization. This is the same as how wide each file's vertical bar should be.
@@ -165,9 +165,9 @@ This is a list of key-value pairs that the configuration file will recognize:
  - `imageOutputDirectory`: The location of the directory to save the visualization's images to.
  - `testHarnessOutput` (optional): The location that the test harness script should output its output text file to. If left unset, defaults to `temp/test_out.txt`.
 
- All relative file paths will be treated as relative to the location you begin running the Historical Fault Localization Tool from.
+All relative file paths will be treated as relative to the location you begin running the Historical Fault Localization Tool from.
 
- All of the options are required except for `testHarnessOutput`. In addition, `lowerBound` and `upperBound` are only required if  `suspiciousnessAlgorithm` is set to `proximity`.
+All of the options are required except for `testHarnessOutput`. In addition, `lowerBound` and `upperBound` are only required if  `suspiciousnessAlgorithm` is set to `proximity`.
 
 The `statementHeight`, `statementWidth`, `fileMargin`, and `fileFontSize` options must be set to a value that can be parsed by `Integer.parseInt()` in Java. The `testTimeout` option must be set to a value that can be parsed by `Long.parseLong()`.
 
@@ -198,7 +198,7 @@ The test harness script will receive input as though it had been called by the c
 
 Altogether, the test harness script will be run as though
 
-    ./[path to test harness]  --work-directory=[workingDirectoryPath] --commit-hash=[commitHash] --commit-timestamp=[timestamp] --output_file=[outputFilePath]
+    ./[path to test harness] --work-directory=[workingDirectoryPath] --commit-hash=[commitHash] --commit-timestamp=[timestamp] --output_file=[outputFilePath]
 
 had been run from the command line.
 
@@ -211,17 +211,25 @@ The information that the test harness script collects regarding test coverage sh
 Each line of the output file must contain information representing exactly one test case in your test suite.
 
  1. Empty lines and lines containing only whitespace are ignored.
+
     1 .On non-empty lines, leading and trailing whitespace is stripped before  processing.
     2. Non-empty lines representing test cases should be whitespace-delimited lists of strings.
+
  2. Each line must start with either the string `passed` or `failed` (case insensitive).
+
     1. If the string is `passed`, it indicates that the test case passed.
     2. The string `failed` has the obvious meaning.
+
  1. After the first string in each line, statements that were executed by the test should be represented by pairs of strings.
+
     1. The first string represents the file that the executed statement can be found in.
     2. The second string represents the line number within the file of the executed statement.
-       1. The second string should match the format for a Java integer, as determined by the `Integer.parseInt` function.
+
+       1. The second string should match the format for a Java integer, as determined by the `Integer.parseInt()` function.
+
     3. For example, the pair of strings `app.rb 15` would mean that the test case executed line 15 of the file app.rb.
-     4. It is acceptable for a test case line to have the same file-line number pair multiple times, but it is not necessary. If a file-line number pair appears multiple times, it will only be recorded once when the file is   parsed.
+
+    4. It is acceptable for a test case line to have the same file-line number pair multiple times, but it is not necessary. If a file-line number pair appears multiple times, it will only be recorded once when the file is   parsed.
 
 This is an example of the contents of a correctly formatted test harness output file:
 
