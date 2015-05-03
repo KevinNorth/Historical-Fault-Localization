@@ -10,8 +10,8 @@ import java.util.List;
 
 public class OchiaiSuspiciousnessCalculator extends SuspiciousnessCalculator {
     @Override
-    public List<SuspiciousnessScore>
-        calculateSuspiciousness(TestExecutionData testExecutionData) {
+    protected List<SuspiciousnessScore>
+       doCalculateSuspiciousness(TestExecutionData testExecutionData) {
         List<SuspiciousnessScore> suspiciousnessScores = new ArrayList<>();
             
         int numFailingTests = testExecutionData.getTests(false).size();

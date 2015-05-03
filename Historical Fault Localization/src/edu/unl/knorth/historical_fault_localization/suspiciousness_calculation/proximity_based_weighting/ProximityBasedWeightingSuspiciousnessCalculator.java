@@ -38,32 +38,10 @@ public class ProximityBasedWeightingSuspiciousnessCalculator
     }
     
     @Override
-    public List<SuspiciousnessScore> calculateSuspiciousness(
+    protected List<SuspiciousnessScore> doCalculateSuspiciousness(
             TestExecutionData testExecutionData) {
         List<TestData> passingTests = testExecutionData.getTests(true);
         List<TestData> failingTests = testExecutionData.getTests(false);
-        
-        // If there aren't any passing tests, or if there aren't any failing
-        // test, calculating the suspiciousness would involve some
-        // divide-by-zero-type situations. Instead, we mark all statements as
-        // highly suspicious or not susicious at all.
-        if(passingTests.isEmpty()) {
-            // No passing tests - all statements are suspicious
-            List<SuspiciousnessScore> suspiciousnessScores = new ArrayList<>();
-            for(StatementData statement : testExecutionData.getStatements()) {
-                suspiciousnessScores.add(new SuspiciousnessScore(statement,
-                        1.0));
-            }
-            return suspiciousnessScores;
-        } else if(failingTests.isEmpty()) {
-            // No failing tests - no statements are suspicious
-            List<SuspiciousnessScore> suspiciousnessScores = new ArrayList<>();
-            for(StatementData statement : testExecutionData.getStatements()) {
-                suspiciousnessScores.add(new SuspiciousnessScore(statement,
-                        0.0));
-            }
-            return suspiciousnessScores;
-        }
         
         List<Weighting> unadjustedWeightings = new ArrayList<>();
         for(TestData passingTest : passingTests) {
