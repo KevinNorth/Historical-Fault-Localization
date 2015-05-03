@@ -6,6 +6,7 @@
 .mtj.tmp/
 
 # Package Files #
+/Historical Fault Localization/dist/
 *.jar
 *.war
 *.ear
@@ -26,6 +27,4 @@ Historical\ Fault\ Localization/temp
 historical-fault-localization-target-ruby-app/*
 
 # include library files in the repository
-!Historical\ Fault\ Localization/lib/*.jar
-!Historical\ Fault\ Localization/lib/*.war
-!Historical\ Fault\ Localization/lib/*.ear
+!Historical\ Fault\ Localization/lib/
