@@ -88,7 +88,7 @@ public class SuspiciousnessVisualizer {
                     statementHeight, statementWidth, fileMargin, fileFontSize);
             
             double suspiciousness = ss.getSuspiciousness();
-            float hue = (float) ((1 - suspiciousness) * (120.0 / 360.0)); // Goes from red to green
+            float hue = (float) ((1 - suspiciousness) * (240.0 / 360.0)); // Goes from red to green
             
             g2.setColor(new Color(Color.HSBtoRGB(hue, 1.0f, 1.0f)));
             g2.fillRect(rect.x, rect.y, rect.width, rect.height);
