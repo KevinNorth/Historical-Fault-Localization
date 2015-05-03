@@ -2,12 +2,12 @@
 Implements proximity based weighting fault localization (http://dx.doi.org/10.1109/ASE.2011.6100088) and applies the algorithm to sets of commits in a git repository.
 
 ##Table of Contents
- - [Introduction](#Introduction)
- - [Organization of the Program](#Organization of the Program)
- - [How to Compile the Program](#How to Compile the Program)
- - [How to Run the Program](#How to Run the Program)
- - [How to Configure the Program](#How to Configure the Program)
- - [How to Set Up a Target Program](#How to Set Up a Target Program)
+ - [Introduction](#introduction)
+ - [Organization of the Program](#organization-of-the-program)
+ - [How to Compile the Program](#how-to-compile-the-program)
+ - [How to Run the Program](#how-to-run-the-program)
+ - [How to Configure the Program](#how-to-configure-the-program)
+ - [How to Set Up a Target Program](#how-to-set-up-a-target-program)
 
 If you're reading this document in a text editor instead of a Markdown viewer, you can Find i.e. "#How to Compile the Program" in order to jump to a section.
 
@@ -44,7 +44,7 @@ The Test Executor does not provide the test harness script! The end user needs t
 
 Every time it is run, the test harness script will receive information about where the tests are and what version of the program under test is being analyzed. The test harness script is expected to run the target program's tests and collect information about which lines of code are run by each test. This information should then be put into a file in a particular location, which the Test Executor will subsequently read in order to record the test coverage data.
 
-The Test Executor assumes that the test harness script adheres to a particular. It is up to the end user to follow this specification. See the [How to Set Up a Target Program](#How to Set Up a Target Program) section to read the test harness' specification.
+The Test Executor assumes that the test harness script adheres to a particular. It is up to the end user to follow this specification. See the [How to Set Up a Target Program](#how-to-set-up-a-target-program) section to read the test harness' specification.
 
 ##Suspiciousness Calculator
 
@@ -81,14 +81,16 @@ where 0° is pure red and 240° is pure blue. See [https://en.wikipedia.org/wiki
 
 #How to Compile the Program
 
+From the `Historical Fault Localization` directory, run
 
+    ant jar
 
 #How to Run the Program
 
 To run the program:
 
- 1. Prepare the target program. See [How to Set Up a Target Program](#How to Set Up a Target Program) for instructions.
- 1. Prepare the configuration file. See [How to Configure the Program](#How to Configure the Program) for instructions.
+ 1. Prepare the target program. See [How to Set Up a Target Program](#how-to-set-up-a-target-program) for instructions.
+ 1. Prepare the configuration file. See [How to Configure the Program](#how-to-configure-the-program) for instructions.
  2. Run
 
     java -jar [path to compiled program] [path to configuration file]
@@ -127,18 +129,59 @@ So, for example, the key-value pair
 
 will use the key `gitArgument` and the value `--since=2015-01-01 --reverse --date-order`.
 
+## Options
+
 This is a list of key-value pairs that the configuration file will recognize:
 
  - `gitArguments`: To collect a list of commits to process, the Historical Fault Localization Tool will run `git log --format=%H-%cd`. Without any arguments, this will produce a list of all commits in the project in descending date order, which might be more commits than desired or a different order than desired.
-   To decide which commits should be used and in what order they should be used,
+  So, to allow you to decide which commits should be used and in what order they should be used, the string you set with `gitArguments` will be appended to the end of `git log --format=%H-%cD`. For example, to use the commits returned by `git log --format=%h%cD --since=2015-01-01 --reverse --date-order`, set the parameter accordingly:
+
+    gitArgument --since=2015-01-01 --reverse --date-order
+
+  This configuration option is mandatory, so if you don't want to set any options, simply use
+
+    gitArgument --date-order
+
+  which preserves `git log`'s default behavior.
+
+ - `testHarnessPath`: The path to the test harness script.
+ - `targetProgramDirectory`: The path to the root of the target program's Git repository.
+ - `testTimeout`: The amount of time, in milliseconds, to allow the test harness to run before giving up and killing its process. Once the test harness script finishes running for one commit, the timeout timer resets, giving the full timeout period again when the test harness runs for the next commit.
+ - `suspiciousnessAlgorithm`: Set to one of two values:
+   1. Set to `ochiai` in order to use the Ochiai fault localization algorithm.
+   2. Set to `proximity` in order to use the proximity-based weighting algorithm.
+ - `lowerBound` (optional): This configuration option is only required if you set `suspiciousnessAlgorithm` to `proximity`. Determines how the lower bound for unadjusted weightings is determined. Set to one of three values:
+   1. Set to `none` to indicate that the lower bound should be ignored.
+   2. Set to `quartile" to indicate that the lower bound should be the third quartile.
+   3. Set to `tail` to indicate that the lower quartile should be the lower outliers.
+ - `upperBound` (optional): This configuration option is only required if you set `suspiciousnessAlgorithm` to `proximity`. Determines how the upper bound for unadjusted weightings is determined. Set to one of three values:
+   1. Set to `none` to indicate that the upper bound should be ignored.
+   2. Set to `quartile" to indicate that the upper bound should be the first quartile.
+   3. Set to `tail` to indicate that the upper quartile should be the upper outliers.
+ - `statementHeight`: How many pixels tall each statement's horizontal bar should be in the visualization.
+ - `statementWidth`: How many pixels wide each statement's horizontal bar should be in the visualization. This is the same as how wide each file's vertical bar should be.
+ - `fileMargin`: The amount of horizontal space, in pixels, appearing in-between each file's vertical bar in the visualization.
+ - `fileFontSize`: The font size, in pixels, to use for the file labels above the vertical bars in the visualization.
+ - `imageOutputDirectory`: The location of the directory to save the visualization's images to.
+ - `testHarnessOutput` (optional): The location that the test harness script should output its output text file to. If left unset, defaults to `temp/test_out.txt`.
+
+ All relative file paths will be treated as relative to the location you begin running the Historical Fault Localization Tool from.
+
+ All of the options are required except for `testHarnessOutput`. In addition, `lowerBound` and `upperBound` are only required if  `suspiciousnessAlgorithm` is set to `proximity`.
+
+The `statementHeight`, `statementWidth`, `fileMargin`, and `fileFontSize` options must be set to a value that can be parsed by `Integer.parseInt()` in Java. The `testTimeout` option must be set to a value that can be parsed by `Long.parseLong()`.
 
 #How to Set Up a Target Program
 
+Your target program must be version controlled using Git and it must have a test suite. In addition, you must create a test harness script that can run the target program's test and report code coverage data for each test.
+
 ##Test Harness Script Specification
+
+The test harness script you create must follow this specification.
 
 ###Overview
 
-Every time it is run, the test harness script will receive information about where the tests are and what version of the program under test is being analyzed. The test harness script is expected to run the target program's tests and collect information about which lines of code are run by each test. This information should then be put into a file in a particular location, which the Test Executor will subsequently read in order to record the test coverage data.
+Every time it is run, the test harness script will receive information about where the tests are and what version of the program under test is being analyzed. The test harness script is expected to run the target program's tests and collect information about which lines of code are run by each test. This information should then be put into a file in a particular location, which the [Test Executor](#Test Executor) will subsequently read in order to record the test coverage data.
 
 ###The Script's Input
 
