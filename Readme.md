@@ -3,13 +3,11 @@ Implements proximity based weighting fault localization (http://dx.doi.org/10.11
 
 ##Table of Contents
  - [Introduction](#introduction)
- - [Organization of the Program](#organization-of-the-program)
  - [How to Compile the Program](#how-to-compile-the-program)
  - [How to Run the Program](#how-to-run-the-program)
  - [How to Configure the Program](#how-to-configure-the-program)
+ - [Organization of the Program](#organization-of-the-program)
  - [How to Set Up a Target Program](#how-to-set-up-a-target-program)
-
-If you're reading this document in a text editor instead of a Markdown viewer, you can Find i.e. `#How to Compile the Program` in order to jump to a section.
 
 #Introduction
 
@@ -18,64 +16,6 @@ This program performs fault localization analysis of multiple commits of a targe
 This information is then fed to a fault localization algorithm, which gives each line of code a suspiciousness score. The higher a line of code's suspiciousness score is, the more likely it is that line of code will need to be changed as part of writing a patch to make a failing test pass again.
 
 Finally, this fault localization information is passed to a visualization tool modeled after the Tarantula visualizer (http://dx.doi.org/10.1145/581339.581397). This visualization creates one image for each commit that was processed in the first step. The image contains vertical bars, one for each source code file the tests obtained coverage information for. Each of these vertical bars are made of smaller horizontal bars stacked on top of each other. Bars at the top of the image represent lines of code at the beginning of the source code files, and bars at the bottom represent lines of code at the end of files. Each line of code is colored red if it is highly suspicious, blue if it is not suspicious, and green to yellow if it is moderately suspicious.
-
-#Organization of the Program
-
-This program is made up of four primary components:
-
- 1. The [Target Program Handler](#target-program-handler) runs Git commands in order to checkout the requested commits in the target program's Git repository.
- 2. The [Test Executor](#test-executor) asks the target program to run its tests and send back test coverage data.
- 3. The [Suspiciousness Calculator](#suspiciousness-calculator) performs fault localization and calculates the suspiciousness of lines of code.
- 4. The [Visualizer](#visualizer) outputs images showing the results of the fault localization.
-
-##Target Program Handler
-The Target Program Handler's code is located in the `edu.unl.knorth.historical_fault_localization.target_program_handler` package.
-
-The Target Program Handler performs three tasks. First, it starts a process that runs `git log` in order to obtain a list of commits in the target program's repository that should be analyzed. Then, for each of those commits, the Target Program Handler performs each of the next two tasks. It starts a process running `git checkout` in order to checkout, one at a time, each of the commits obtained earlier. Then, it asks the Test Executor to run the target program's tests in the currently checked-out version of the target program.
-
-##Text Executor
-The Test Executor code is located in the `edu.unl.knorth.historical_fault_localization.target_program_handler.test_executor` package.
-
-The Test Executor runs the target program's tests. It does so by running a script, called the test harness script, that instructs the target program on how to run its tests and collect coverage data for them.
-
-The Test Executor does not provide the test harness script! The end user needs to write the test harness script him- or herself. This has the advantage that, when provided with an appropriate test harness script, the Historical Fault Localization Tool is compatible with target programs written in any language and using any test environment. The main disadvantage is that this approach requires more work from the end user.
-
-###Test Harness Script
-
-Every time it is run, the test harness script will receive information about where the tests are and what version of the program under test is being analyzed. The test harness script is expected to run the target program's tests and collect information about which lines of code are run by each test. This information should then be put into a file in a particular location, which the Test Executor will subsequently read in order to record the test coverage data.
-
-The Test Executor assumes that the test harness script adheres to a particular specification. It is up to the end user to follow this specification. See the [How to Set Up a Target Program](#how-to-set-up-a-target-program) section to read the test harness' specification.
-
-##Suspiciousness Calculator
-
-The Suspiciousness Calculator's source code is in the `edu.unl.knorth.historical_fault_localization.suspiciousness_calculation` package.
-
-Once the Target Program Handler, Test Executor, and test harness script have collected test coverage data on all of the requested commits, the Suspiciousness Calculator performs fault localization. For each commit in the target program, it calculates the suspiciousness of each line of code the test cases executed.
-
-The Historical Fault Localization Tool implements the Ochiai and Proximity-Based Weighting fault localization algorithms. Which one is used can be configured before running the tool.
-
-If all of the tests pass for a particular commit, the Suspiciousness Calculator assigns all lines of code a suspiciousness of 0, or not suspicious whatsoever. Likewise, if all tests fail, all lines of code are assigned a suspiciousness of 1, or completely suspicious. This ignores lines of code that were not executed by the test case, so the visualization ultimately output will at least show which lines of code were executed or not for each commit.
-
-##Visualizer
-
-The Visualizer's source code is in the `edu.unl.knorth.historical_fault_localization.visualizer` package.
-
-The Visualizer produces produces one image for each commit that was analyzed. These files are named `[order processed]-[commit SHA1 hash].png`, indicating which commit each image correspondes to. For example, if commit `667ffe5f6167352b028e5af83acd7ce52786a497` is the first commit the Target Program Handler checked out, the Visualizer will name that commit's visualization `1-667ffe5f6167352b028e5af83acd7ce52786a497.png`.
-
-Each individual image is made up of multiple vertical bars. Each of these bars represents a single file in the target program's source code. The name of the file corresponding to each bar is shown at the top of the bar.
-
-Each individual vertical bar in the image is made up of smaller horizontal bars. Each bar is a solid block of color. Horizontal bars at the top of the image represent the lines of source code at the beginning of the source code file, and horizontal bars at the bottom represent lines of code at the end of the file. Each line of code has a color:
-
- - Reds and oranges represent lines of code with high suspiciousness scores
- - Greens represent middling suspiciousness scores
- - Blues, especially deep, dark blues, represent lines of code with low suspiciousness scores
- - Black represents lines of code that were not executed by any of the tests
-
-The color is chosen by selecting a hue value for a Hue-Saturation-Brightness description. In particular, the selected hue is
-
-    (1 - suspiciousness) * (240°)
-
-where 0° is pure red and 240° is pure blue. See [https://en.wikipedia.org/wiki/HSL_and_HSV#HSV_.28Hue_Saturation_Value.29](https://en.wikipedia.org/wiki/HSL_and_HSV#HSV_.28Hue_Saturation_Value.29) for examples of some hue values.
 
 #How to Compile the Program
 
@@ -170,6 +110,64 @@ All relative file paths will be treated as relative to the location you begin ru
 All of the options are required except for `testHarnessOutput`. In addition, `lowerBound` and `upperBound` are only required if  `suspiciousnessAlgorithm` is set to `proximity`.
 
 The `statementHeight`, `statementWidth`, `fileMargin`, and `fileFontSize` options must be set to a value that can be parsed by `Integer.parseInt()` in Java. The `testTimeout` option must be set to a value that can be parsed by `Long.parseLong()`.
+
+#Organization of the Program
+
+This program is made up of four primary components:
+
+ 1. The [Target Program Handler](#target-program-handler) runs Git commands in order to checkout the requested commits in the target program's Git repository.
+ 2. The [Test Executor](#test-executor) asks the target program to run its tests and send back test coverage data.
+ 3. The [Suspiciousness Calculator](#suspiciousness-calculator) performs fault localization and calculates the suspiciousness of lines of code.
+ 4. The [Visualizer](#visualizer) outputs images showing the results of the fault localization.
+
+##Target Program Handler
+The Target Program Handler's code is located in the `edu.unl.knorth.historical_fault_localization.target_program_handler` package.
+
+The Target Program Handler performs three tasks. First, it starts a process that runs `git log` in order to obtain a list of commits in the target program's repository that should be analyzed. Then, for each of those commits, the Target Program Handler performs each of the next two tasks. It starts a process running `git checkout` in order to checkout, one at a time, each of the commits obtained earlier. Then, it asks the Test Executor to run the target program's tests in the currently checked-out version of the target program.
+
+##Text Executor
+The Test Executor code is located in the `edu.unl.knorth.historical_fault_localization.target_program_handler.test_executor` package.
+
+The Test Executor runs the target program's tests. It does so by running a script, called the test harness script, that instructs the target program on how to run its tests and collect coverage data for them.
+
+The Test Executor does not provide the test harness script! The end user needs to write the test harness script him- or herself. This has the advantage that, when provided with an appropriate test harness script, the Historical Fault Localization Tool is compatible with target programs written in any language and using any test environment. The main disadvantage is that this approach requires more work from the end user.
+
+###Test Harness Script
+
+Every time it is run, the test harness script will receive information about where the tests are and what version of the program under test is being analyzed. The test harness script is expected to run the target program's tests and collect information about which lines of code are run by each test. This information should then be put into a file in a particular location, which the Test Executor will subsequently read in order to record the test coverage data.
+
+The Test Executor assumes that the test harness script adheres to a particular specification. It is up to the end user to follow this specification. See the [How to Set Up a Target Program](#how-to-set-up-a-target-program) section to read the test harness' specification.
+
+##Suspiciousness Calculator
+
+The Suspiciousness Calculator's source code is in the `edu.unl.knorth.historical_fault_localization.suspiciousness_calculation` package.
+
+Once the Target Program Handler, Test Executor, and test harness script have collected test coverage data on all of the requested commits, the Suspiciousness Calculator performs fault localization. For each commit in the target program, it calculates the suspiciousness of each line of code the test cases executed.
+
+The Historical Fault Localization Tool implements the Ochiai and Proximity-Based Weighting fault localization algorithms. Which one is used can be configured before running the tool.
+
+If all of the tests pass for a particular commit, the Suspiciousness Calculator assigns all lines of code a suspiciousness of 0, or not suspicious whatsoever. Likewise, if all tests fail, all lines of code are assigned a suspiciousness of 1, or completely suspicious. This ignores lines of code that were not executed by the test case, so the visualization ultimately output will at least show which lines of code were executed or not for each commit.
+
+##Visualizer
+
+The Visualizer's source code is in the `edu.unl.knorth.historical_fault_localization.visualizer` package.
+
+The Visualizer produces produces one image for each commit that was analyzed. These files are named `[order processed]-[commit SHA1 hash].png`, indicating which commit each image correspondes to. For example, if commit `667ffe5f6167352b028e5af83acd7ce52786a497` is the first commit the Target Program Handler checked out, the Visualizer will name that commit's visualization `1-667ffe5f6167352b028e5af83acd7ce52786a497.png`.
+
+Each individual image is made up of multiple vertical bars. Each of these bars represents a single file in the target program's source code. The name of the file corresponding to each bar is shown at the top of the bar.
+
+Each individual vertical bar in the image is made up of smaller horizontal bars. Each bar is a solid block of color. Horizontal bars at the top of the image represent the lines of source code at the beginning of the source code file, and horizontal bars at the bottom represent lines of code at the end of the file. Each line of code has a color:
+
+ - Reds and oranges represent lines of code with high suspiciousness scores
+ - Greens represent middling suspiciousness scores
+ - Blues, especially deep, dark blues, represent lines of code with low suspiciousness scores
+ - Black represents lines of code that were not executed by any of the tests
+
+The color is chosen by selecting a hue value for a Hue-Saturation-Brightness description. In particular, the selected hue is
+
+    (1 - suspiciousness) * (240°)
+
+where 0° is pure red and 240° is pure blue. See [https://en.wikipedia.org/wiki/HSL_and_HSV#HSV_.28Hue_Saturation_Value.29](https://en.wikipedia.org/wiki/HSL_and_HSV#HSV_.28Hue_Saturation_Value.29) for examples of some hue values.
 
 #How to Set Up a Target Program
 
